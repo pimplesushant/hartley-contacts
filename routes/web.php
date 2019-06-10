@@ -15,7 +15,13 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
-
 Auth::routes(['verify' => true]);
 
-Route::middleware('verified')->get('/home', 'HomeController@index');
+Route::middleware('verified')->get('/home', function () {
+    return redirect('/contacts');
+});
+
+Route::middleware('verified')->resource('/contacts', 'ContactController');
+Route::middleware('verified')->get('/getContacts', 'ContactController@getContacts');
+Route::middleware('verified')->post('/share/{id}', 'ContactController@share')->name('contacts.share');
+Route::middleware('verified')->get('/export/{id}', 'ContactController@export')->name('contacts.export');
