@@ -22,6 +22,6 @@ Route::middleware('verified')->get('/home', function () {
 });
 
 Route::middleware('verified')->resource('/contacts', 'ContactController');
-Route::middleware('verified')->get('/getContacts', 'ContactController@getContacts');
+Route::middleware('verified')->get('/getContacts/{shared?}', 'ContactController@getContacts');
 Route::middleware('verified')->post('/share/{id}', 'ContactController@share')->name('contacts.share');
 Route::middleware('verified')->get('/export/{id}', 'ContactController@export')->name('contacts.export');
