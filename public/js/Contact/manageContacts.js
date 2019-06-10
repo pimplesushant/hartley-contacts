@@ -53,6 +53,7 @@ $(function () {
 
     $(document).on('click', 'tbody .view_contact', function () {
         var data_row = $("#" + $(this).closest('tr').parent().parent().attr('id')).DataTable().row($(this).closest('tr')).data();
+        $('#download_contact').attr('href', '/contacts/' + data_row.id);
         $('.detail-name').text(data_row.name);
         $('#detail-email').text(data_row.email);
         $('#detail-primary').text(data_row.primary_phone);
@@ -62,6 +63,7 @@ $(function () {
     });
 
     $(".modal#viewContactDetails").on("hidden.bs.modal", function () {
+        $('#download_contact').attr('href','#');
         $('.detail-name, #detail-email, #detail-primary, #detail-secondary').text('');
         $('#detail-image').attr('src', '#').attr('alt', '#');
     });
