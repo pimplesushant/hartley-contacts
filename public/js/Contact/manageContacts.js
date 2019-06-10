@@ -55,14 +55,15 @@ $(function () {
         $('#detail-image').attr('src', '#').attr('alt', '#');
     });
 
-    $(document).on('click','.delete_contact', function(){
-        $.ajax({
-            url: $(this).attr('href'),
-            type: 'DELETE',
-            success: function(result) {
-                window.reload();
-            }
-        });
+    $(document).on('click','.delete_contact', function(e){
+        e.preventDefault();
+        $('#delete_it').attr('data-cid',$(this).data('id'))
+        $('#confirmContactDelete').modal('show');
+    });
+
+    $(document).on('click','#delete_it', function(e){
+        e.preventDefault();
+        $('#delete'+$(this).data('cid')).submit();
     });
 
 });

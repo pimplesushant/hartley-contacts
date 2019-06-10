@@ -183,10 +183,17 @@ class ContactController extends Controller
      * @param  \App\Contact $contact
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Contact $contact)
+    public function destroy(Contact $contact, Request $request)
     {
         try {
-            return $contact->softDeletes();
+            $contact->photo;
+            File::delete(public_path() .$contact->photo);
+            $contact->delete();
+            $request->session()->flash('message.level', 'success');
+            $request->session()->flash('message.content', 'Contact Deleted Successfully');
+
+            return redirect('/contacts');
+
         } catch (\Exception $ex) {
             return abort('404');
         }

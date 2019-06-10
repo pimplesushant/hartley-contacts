@@ -11,10 +11,10 @@
     <i class="fa fa-share"></i>
 </a>
 
-<form action="{{ route('contacts.destroy', ['id'=>$id]) }}" method="POST" style="display: inline !important;">
+<form action="{{ route('contacts.destroy', ['id'=>$id]) }}" method="POST" id="delete{{$id}}" style="display: inline !important;">
     @method('DELETE')
     @csrf
-    <button data-original-title="Delete Contact" class="btn btn-default btn-sm"
+    <button data-original-title="Delete Contact" class="btn btn-default btn-sm delete_contact" data-id="{{$id}}"
             data-tt="tooltip" title="Delete Contact" data-placement="top">
         <i class="fa fa-trash"></i>
     </button>
