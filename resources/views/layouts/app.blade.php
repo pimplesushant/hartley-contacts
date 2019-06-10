@@ -23,7 +23,8 @@
     <!-- Ionicons -->
     <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.min.css">
-
+    <link href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.3.1/css/buttons.bootstrap.min.css">
     @yield('css')
 </head>
 
@@ -93,7 +94,15 @@
         @include('layouts.sidebar')
         <!-- Content Wrapper. Contains page content -->
         <div class="content-wrapper">
-            @yield('content')
+            <section class="content-header">
+                @yield('back')
+                <h1>
+                    @yield('page_title')
+                </h1>
+            </section>
+            <section class="content">
+                @yield('content')
+            </section>
         </div>
 
         <!-- Main Footer -->
