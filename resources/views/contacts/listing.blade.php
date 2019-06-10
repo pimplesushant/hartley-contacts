@@ -63,9 +63,26 @@
 				<!-- /.box-body -->
             </div>
         </div>
-
     </div>
 </div>
+    <div id="confirmContactDelete" class="modal fade in" role="dialog" aria-hidden="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">×</button>
+                    <h4 class="modal-title">Delete Contact?</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this contact?</p>
+                    <!-- /.box-body -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm" data-dismiss="modal">No</button>
+                    <button class="btn btn-sm" id="delete_it">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 @section('scripts')
 	<script src="{{ asset('/js/common.js') }}"></script>
