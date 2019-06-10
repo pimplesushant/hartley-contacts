@@ -1,0 +1,37 @@
+version: '3'
+
+volumes:
+ hartley-db-vol:
+
+services:
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - hartley-db-vol:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: hartleyApp
+      MYSQL_DATABASE: hartleyApp
+    ports:
+      - 3307:3306
+    restart: unless-stopped
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: hartleyApp
+    ports:
+      - 8001:80
+    depends_on:
+      - mysql
+    restart: unless-stopped
+  www:
+    image: ajitemsahasrabuddhe/php-apache:bionic-7.2-dev
+    ports:
+      - 8002:80
+    volumes:
+      - ./:/var/www/html
+      - ./000-default.conf:/etc/apache2/sites-available/000-default.conf
+    restart: unless-stopped
+    depends_on:
+      - mysql
