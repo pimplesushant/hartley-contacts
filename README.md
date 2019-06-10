@@ -8,34 +8,55 @@ A Test Project for Hartley
 
 #Run
 
-```sudo usermod -aG www-data $USER```
+```
+sudo usermod -aG www-data $USER
+```
 
-```cd /hartley-contacts```
+```
+cd /hartley-contacts
+```
 
-```docker-compose up -d```
+```
+docker-compose up -d
+```
 
-```docker exec -it www bash```
+```
+docker exec -it www bash
+```
 
-```composer update```
+```
+composer update
+```
 
-```sudo chown -hR www-data:www-data ../html```
+```
+sudo chown -hR www-data:www-data ../html
+```
 
-```sudo find ../html -type f -exec chmod 664 {} \;```
+```
+sudo find ../html -type f -exec chmod 664 {} \;
+```
 
-```sudo find ../html -type d -exec chmod 775 {} \;```
+```
+sudo find ../html -type d -exec chmod 775 {} \;
+```
 
-```sudo find ../html -type d -exec chmod g+s {} \;```
+```
+sudo find ../html -type d -exec chmod g+s {} \;
+```
 
-```sudo chmod 777 -R stogare/ bootstrap/cache```
+```
+sudo chmod 777 -R stogare/ bootstrap/cache
+```
 
-```php artisan:migrate```
+```
+php artisan:migrate
+```
 
-```php artisan config:clear && \
+```
+php artisan config:clear && \
 php artisan cache:clear && \
 composer dump-autoload && \
 php artisan view:clear && \
 php artisan route:clear && \
-php artisan config:cache```
-
-
-
+php artisan config:cache;
+```
