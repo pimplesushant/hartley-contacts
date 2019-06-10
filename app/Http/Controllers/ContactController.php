@@ -27,12 +27,12 @@ class ContactController extends Controller
         }
     }
 
-    public function getContacts()
+    public function getContacts($shared = false)
     {
         try {
-            $users = DB::table('contacts')->where('created_by', Auth::user()->id);
+            $contacts = DB::table('contacts')->where('created_by', Auth::user()->id);
             $responseBody = array();
-            return DataTables::of($users)
+            return DataTables::of($contacts)
                 ->addColumn('name', function ($m) {
                     $name = $m->first_name . " " . $m->middle_name . " " . $m->last_name;
                     return preg_replace('!\s+!', ' ', $name);
@@ -44,9 +44,18 @@ class ContactController extends Controller
                 ->addColumn('photo', function ($m) {
                     return (!is_null($m->photo)) ? $m->photo : 'http://daivadnyasamajgoa.org/wp-content/uploads/2017/08/icon-user-default-150x150.png';
                 })
-                ->addColumn('action', function ($m) {
+                ->addColumn('action', function ($m) use ($shared) {
                     $responseBody['id'] = $m->id;
+                    $responseBody['shared'] = $shared;
                     return view('contacts.listing-actions')->with($responseBody);
+                })
+                ->filterColumn('name', function ($query, $keyword) {
+                    $sql = "CONCAT(first_name, ' ', middle_name, ' ', last_name) LIKE ?";
+                    $query->whereRaw($sql, ["%{$keyword}%"]);
+                })
+                ->filterColumn('contacts', function ($query, $keyword) {
+                    $sql = "primary_phone LIKE ? OR secondary_phone LIKE ?";
+                    $query->whereRaw($sql, ["{$keyword}%", "{$keyword}%"]);
                 })
                 ->make();
         } catch (\Exception $ex) {
@@ -87,7 +96,7 @@ class ContactController extends Controller
 
         $validatedData['created_by'] = Auth::user()->id;
 
-        if(!is_null($request->photo))
+        if (!is_null($request->photo))
             $validatedData['photo'] = $this->saveImage($request->photo);
 
         $contact = Contact::create($validatedData);
@@ -187,7 +196,7 @@ class ContactController extends Controller
     {
         try {
             $contact->photo;
-            File::delete(public_path() .$contact->photo);
+            File::delete(public_path() . $contact->photo);
             $contact->delete();
             $request->session()->flash('message.level', 'success');
             $request->session()->flash('message.content', 'Contact Deleted Successfully');
