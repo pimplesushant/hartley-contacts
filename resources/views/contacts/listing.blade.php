@@ -97,6 +97,13 @@
                     </div>
                     <!-- /.box-body -->
                 </div>
+                <div class="modal-footer">
+                    <a href="#" data-original-title="Download Contact"
+                       class="btn btn-default btn-sm" id="download_contact" data-tt="tooltip" title="Download Contact"
+                       data-placement="top">
+                        <i class="fa fa-download"> Download</i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>

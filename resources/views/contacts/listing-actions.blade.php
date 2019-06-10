@@ -2,6 +2,10 @@
         class="btn btn-default btn-sm view_contact" data-tt="tooltip" title="View Contact" data-placement="top">
     <i class="fa fa-eye"></i>
 </button>
+<a href="{{route('contacts.show', ['id'=>$id])}}" data-original-title="Download Contact"
+        class="btn btn-default btn-sm" data-tt="tooltip" title="Download Contact" data-placement="top">
+    <i class="fa fa-download"></i>
+</a>
 @if(!$shared)
     <a href="{{route('contacts.edit', ['id'=>$id])}}" data-original-title="Edit Contact"
        class="btn btn-default btn-sm" data-tt="tooltip" title="Edit Contact" data-placement="top">

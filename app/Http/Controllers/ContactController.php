@@ -6,9 +6,9 @@ use App\Contact;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use JeroenDesloovere\VCard\VCard;
 use Yajra\DataTables\Facades\DataTables;
 
 class ContactController extends Controller
@@ -30,7 +30,7 @@ class ContactController extends Controller
     public function getContacts($shared = false)
     {
         try {
-            $contacts = DB::table('contacts')->where('created_by', Auth::user()->id);
+            $contacts = Contact::where('created_by', Auth::user()->id);
             $responseBody = array();
             return DataTables::of($contacts)
                 ->addColumn('name', function ($m) {
@@ -128,21 +128,6 @@ class ContactController extends Controller
     }
 
     /**
-     * Display the specified contact.
-     *
-     * @param  \App\Contact $contact
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Contact $contact)
-    {
-        try {
-            return response($contact);
-        } catch (\Exception $ex) {
-            return abort('404');
-        }
-    }
-
-    /**
      * Show the form for editing the specified contact.
      *
      * @param  \App\Contact $contact
@@ -184,6 +169,23 @@ class ContactController extends Controller
     public function share(Request $request, Contact $contact, User $user)
     {
         //
+    }
+
+    /**
+     * Export the specified contact as a vcf
+     *
+     * @param  \App\Contact $contact
+     * @return \JeroenDesloovere\VCard\
+     */
+    public function show(Contact $contact)
+    {
+        $vcard = new VCard();
+        $vcard->addName($contact->last_name, $contact->first_name, $contact->middle_name);
+        $vcard->addEmail($contact->email);
+        $vcard->addPhoneNumber($contact->primary_phone, 'PREF;WORK');
+        $vcard->addPhoneNumber($contact->secondary_phone, 'WORK');
+        $vcard->addPhoto(public_path() . $contact->photo);
+        return $vcard->download();
     }
 
     /**

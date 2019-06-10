@@ -39,7 +39,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function contacts()
     {
-        return $this->hasMany(Contact::class);
+        return $this->hasMany(Contact::class, 'created_by');
     }
 
+    public function shared_contacts()
+    {
+        return $this->belongsToMany(Contact::class, 'created_by');
+    }
 }
