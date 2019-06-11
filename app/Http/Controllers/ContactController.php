@@ -7,6 +7,7 @@ use App\User;
 use Chumper\Zipper\Facades\Zipper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -23,7 +24,8 @@ class ContactController extends Controller
     public function index()
     {
         try {
-            return view('contacts.listing');
+            $data['users'] = User::whereNotNull('email_verified_at')->where('id', '!=', Auth::user()->id)->get();
+            return view('contacts.listing', $data);
         } catch (\Exception $ex) {
             return abort('404');
         }
@@ -32,8 +34,8 @@ class ContactController extends Controller
     public function getContacts($shared = false)
     {
         try {
-            $contacts = Contact::where('created_by', Auth::user()->id);
-            $responseBody = array();
+            $shared_contacts = DB::table('contact_user')->where('user_id', Auth::user()->id)->get()->toArray();
+            $contacts = ($shared) ? Contact::whereIn('id',  array_column($shared_contacts, 'contact_id')) : Contact::where('created_by', Auth::user()->id);
             return DataTables::of($contacts)
                 ->addColumn('checkbox', function ($m) {
                     return $m->id;
@@ -209,13 +211,22 @@ class ContactController extends Controller
      * Share the specified contact in storage with specified User.
      *
      * @param  \Illuminate\Http\Request $request
-     * @param  \App\Contact $contact
-     * @param  \App\User $user
      * @return \Illuminate\Http\Response
      */
-    public function share(Request $request, Contact $contact, User $user)
+    public function share(Request $request)
     {
-        //
+        try {
+            $user = User::find($request->user_id);
+            $contact = Contact::find($request->contact_id);
+            $user->contacts()->attach($contact->id);
+
+            $request->session()->flash('message.level', 'success');
+            $request->session()->flash('message.content', 'Contact Shared Successfully');
+
+            return redirect('/contacts');
+        } catch (\Exception $ex) {
+            Log::info($ex->getMessage() . 'on line no. ' . $ex->getLine());
+        }
     }
 
     /**
@@ -237,31 +248,41 @@ class ContactController extends Controller
 
     public function export(Request $request)
     {
-        $contacts = Contact::find(explode(',', $request->contacts));
-        $time = time();
-        $directory = '/vcards/' . $time . '/';
-        $path = public_path() . $directory;
-        if (!File::exists($path)) {
-            File::makeDirectory($path, 0777, $recursive = true, $force = false);
-        }
-        foreach ($contacts as $contact) {
-            $vcard = new VCard();
-            $vcard->addName($contact->last_name, $contact->first_name, $contact->middle_name);
-            $vcard->addEmail($contact->email);
-            $vcard->addPhoneNumber($contact->primary_phone, 'PREF;WORK');
-            $vcard->addPhoneNumber($contact->secondary_phone, 'WORK');
-            $vcard->addPhoto(public_path() . $contact->photo);
-            $vcard->setSavePath($path);
-            $vcard->save();
-        }
+        try {
+            if ($request->contacts) {
+                $contacts = Contact::find(explode(',', $request->contacts));
+                $time = time();
+                $directory = '/vcards/' . $time . '/';
+                $path = public_path() . $directory;
+                if (!File::exists($path)) {
+                    File::makeDirectory($path, 0777, $recursive = true, $force = false);
+                }
+                foreach ($contacts as $contact) {
+                    $vcard = new VCard();
+                    $vcard->addName($contact->last_name, $contact->first_name, $contact->middle_name);
+                    $vcard->addEmail($contact->email);
+                    $vcard->addPhoneNumber($contact->primary_phone, 'PREF;WORK');
+                    $vcard->addPhoneNumber($contact->secondary_phone, 'WORK');
+                    $vcard->addPhoto(public_path() . $contact->photo);
+                    $vcard->setSavePath($path);
+                    $vcard->save();
+                }
 
-        $files = glob(public_path($directory . '/*'));
-        Zipper::make(public_path($time . '.zip'))->add($files)->close();
-        File::deleteDirectory($path);
-        $request->session()->flash('message.level', 'success');
-        $request->session()->flash('message.content', 'Contacts Expotred Successfully');
+                $files = glob(public_path($directory . '/*'));
+                Zipper::make(public_path($time . '.zip'))->add($files)->close();
+                File::deleteDirectory($path);
+                $request->session()->flash('message.level', 'success');
+                $request->session()->flash('message.content', 'Contacts Exported Successfully');
 
-        return response()->download(public_path($time . '.zip'));
+                return response()->download(public_path($time . '.zip'));
+            }
+            $request->session()->flash('message.level', 'danger');
+            $request->session()->flash('message.content', 'Please Select Contacts to Export');
+
+            return redirect('/contacts');
+        } catch (\Exception $ex) {
+            Log::info($ex->getMessage() . 'on line no. ' . $ex->getLine());
+        }
     }
 
     /**
