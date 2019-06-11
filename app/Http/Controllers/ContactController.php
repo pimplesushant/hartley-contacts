@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use JeroenDesloovere\VCard\VCard;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -89,26 +90,36 @@ class ContactController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'first_name' => ['required', 'max:255'],
-            'middle_name' => ['max:255'],
-            'last_name' => ['required', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
-            'primary_phone' => ['required', 'max:15'],
-            'secondary_phone' => ['max:15']
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'first_name' => ['required', 'alpha', 'max:255'],
+                'middle_name' => ['nullable', 'alpha', 'max:255'],
+                'last_name' => ['required', 'alpha', 'max:255'],
+                'email' => ['required', 'email', 'max:255'],
+                'primary_phone' => ['required', 'numeric'],
+                'secondary_phone' => ['nullable', 'numeric']
+            ]);
 
-        $validatedData['created_by'] = Auth::user()->id;
+            if ($validator->fails()) {
+                return redirect()->route('contacts.create', $request->get('_id'))
+                    ->withErrors($validator)
+                    ->withInput();
+            }
 
-        if (!is_null($request->photo))
-            $validatedData['photo'] = $this->saveImage($request->photo);
+            request()->request->add(['created_by' => Auth::user()->id]);
 
-        $contact = Contact::create($validatedData);
+            if (!is_null($request->photo))
+                request()->request->add(['photo' => $this->saveImage($request->photo)]);
 
-        $request->session()->flash('message.level', 'success');
-        $request->session()->flash('message.content', 'Contact Added Successfully');
+            Contact::create($request->all());
 
-        return redirect('/contacts');
+            $request->session()->flash('message.level', 'success');
+            $request->session()->flash('message.content', 'Contact Added Successfully');
+
+            return redirect('/contacts');
+        } catch (\Exception $ex) {
+            Log::info($ex->getMessage() . 'on line no. ' . $ex->getLine());
+        }
     }
 
     public function saveImage($file_data)
@@ -127,6 +138,7 @@ class ContactController extends Controller
             }
             return $directory . '/' . $file_name;
         } catch (\Exception $ex) {
+            Log::info($ex->getMessage() . 'on line no. ' . $ex->getLine());
             return false;
         }
     }
@@ -140,7 +152,7 @@ class ContactController extends Controller
     public function edit(Contact $contact)
     {
         try {
-            return response($contact);
+            return view('contacts.edit')->withContact($contact);
         } catch (\Exception $ex) {
             return abort('404');
         }
@@ -156,9 +168,40 @@ class ContactController extends Controller
     public function update(Request $request, Contact $contact)
     {
         try {
-            return response($contact);
+            $validator = Validator::make($request->all(), [
+                'first_name' => ['required', 'alpha', 'max:255'],
+                'middle_name' => ['nullable', 'alpha', 'max:255'],
+                'last_name' => ['required', 'alpha', 'max:255'],
+                'email' => ['required', 'email', 'max:255'],
+                'primary_phone' => ['required', 'numeric'],
+                'secondary_phone' => ['nullable', 'numeric']
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->route('contacts.edit', $request->get('_id'))
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+
+            $contact = Contact::find($request->get('_id'));
+            $contact->first_name = $request->first_name;
+            $contact->middle_name = $request->middle_name;
+            $contact->last_name = $request->last_name;
+            $contact->email = $request->email;
+            $contact->primary_phone = $request->primary_phone;
+            $contact->secondary_phone = $request->secondary_phone;
+
+            if (!is_null($request->photo))
+                $contact->photo = $this->saveImage($request->photo);
+
+            $contact->save();
+
+            $request->session()->flash('message.level', 'success');
+            $request->session()->flash('message.content', 'Contact Updated Successfully');
+
+            return redirect('/contacts');
         } catch (\Exception $ex) {
-            return abort('404');
+            Log::info($ex->getMessage() . 'on line no. ' . $ex->getLine());
         }
     }
 
@@ -196,12 +239,12 @@ class ContactController extends Controller
     {
         $contacts = Contact::find(explode(',', $request->contacts));
         $time = time();
-        $directory = '/vcards/'.$time.'/';
+        $directory = '/vcards/' . $time . '/';
         $path = public_path() . $directory;
         if (!File::exists($path)) {
             File::makeDirectory($path, 0777, $recursive = true, $force = false);
         }
-        foreach ($contacts as $contact){
+        foreach ($contacts as $contact) {
             $vcard = new VCard();
             $vcard->addName($contact->last_name, $contact->first_name, $contact->middle_name);
             $vcard->addEmail($contact->email);
@@ -212,13 +255,13 @@ class ContactController extends Controller
             $vcard->save();
         }
 
-        $files = glob(public_path($directory.'/*'));
-        Zipper::make(public_path($time.'.zip'))->add($files)->close();
+        $files = glob(public_path($directory . '/*'));
+        Zipper::make(public_path($time . '.zip'))->add($files)->close();
         File::deleteDirectory($path);
         $request->session()->flash('message.level', 'success');
         $request->session()->flash('message.content', 'Contacts Expotred Successfully');
 
-        return response()->download(public_path($time.'.zip'));
+        return response()->download(public_path($time . '.zip'));
     }
 
     /**
