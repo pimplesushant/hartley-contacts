@@ -110,11 +110,61 @@
                 </div>
                 <div class="modal-footer">
                     <a href="#" data-original-title="Download Contact"
-                       class="btn btn-default btn-sm" id="download_contact" data-tt="tooltip" title="Download Contact"
+                       class="btn btn-info btn-sm" id="download_contact" data-tt="tooltip" title="Download Contact"
                        data-placement="top">
                         <i class="fa fa-download"> Download</i>
                     </a>
                 </div>
+            </div>
+        </div>
+    </div>
+    <div id="shareContactDetails" class="modal fade in" role="dialog" aria-hidden="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">×</button>
+                    <h4 class="modal-title">Share Details of <span class="share-name"></span></h4>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ route('contacts.share') }}" method="POST" id="share_form" style="display: inline !important;">
+                        {{ csrf_field() }}
+                        <div class="box-body box-profile">
+                        <span><img class="profile-user-img img img-circle img-responsive" id="share-image" src="#"
+                                   alt=""/></span>
+
+                        <h3 class="profile-username text-center share-name"></h3>
+
+                        <ul class="list-group list-group-unbordered">
+                            <li class="list-group-item">
+                                <b>Email</b> <a class="pull-right" id="share-email"></a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Primary Contact</b> <a class="pull-right" id="share-primary"></a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Secondary Contact</b> <a class="pull-right" id="share-secondary"></a>
+                            </li>
+                        </ul>
+                        <select name="user_id" id="user_id" required
+                                class="form-control">
+                            <option value="">Select User</option>
+                            @foreach($users as $user)
+                                <option value="{{$user->id}}">
+                                    {{ preg_replace('!\s+!', ' ', $user->first_name . " " . $user->middle_name . " " . $user->last_name)}}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <div class="modal-footer">
+                    <input name="contact_id" id="contact_id" type="hidden">
+                    <button type="submit" class="btn btn-primary btn-sm share_contact" id="share_now">
+                        <i class="fa fa-share"> Share Now</i>
+                    </button>
+                </div>
+
+                </form>
             </div>
         </div>
     </div>

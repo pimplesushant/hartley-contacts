@@ -74,6 +74,17 @@ $(function () {
         $('#viewContactDetails').modal('show');
     });
 
+    $(document).on('click', 'tbody .share_contact', function () {
+        var data_row = $("#" + $(this).closest('tr').parent().parent().attr('id')).DataTable().row($(this).closest('tr')).data();
+        $('#contact_id').val(data_row.id);
+        $('.share-name').text(data_row.name);
+        $('#share-email').text(data_row.email);
+        $('#share-primary').text(data_row.primary_phone);
+        $('#share-secondary').text((data_row.secondary_phone != null) ? data_row.secondary_phone : 'NA');
+        $('#share-image').attr('src', data_row.photo).attr('alt', data_row.name);
+        $('#shareContactDetails').modal('show');
+    });
+
     $(document).on('click', '#download_selected', function () {
         var ref_this = $("ul.nav-tabs li.active a").attr('href');
         var favorite = [];
