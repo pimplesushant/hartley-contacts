@@ -25,11 +25,11 @@ docker exec -it www bash
 ```
 
 ```
-composer update
+sudo chown -hR www-data:www-data ../html
 ```
 
 ```
-sudo chown -hR www-data:www-data ../html
+composer update
 ```
 
 ```
@@ -45,11 +45,11 @@ sudo find ../html -type d -exec chmod g+s {} \;
 ```
 
 ```
-sudo chmod 777 -R stogare/ bootstrap/cache
+sudo chmod 777 -R storage/ bootstrap/cache
 ```
 
 ```
-php artisan:migrate
+php artisan migrate
 ```
 
 ```
