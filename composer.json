@@ -17,6 +17,7 @@
         "infyomlabs/adminlte-templates": "5.8.x-dev",
         "doctrine/dbal": "~2.3",
         "jeroendesloovere/vcard": "1.7.2",
+        "chumper/zipper": "1.0.x",
         "yajra/laravel-datatables-oracle":"~9.0"
     },
     "require-dev": {

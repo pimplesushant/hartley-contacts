@@ -11,6 +11,13 @@ $(function () {
         serverSide: true,
         columns: [
             {
+                data: 'checkbox',
+                searchable:false,
+                render: function (data, type, row, meta){
+                    return '<input type="checkbox" class="selected_contacts" name="contacts[]" value="'+data+ '">';
+                }
+            },
+            {
                 data: "id", searchable: false,
                 render: function (data, type, row, meta) {
                     return meta.row + meta.settings._iDisplayStart + 1;
@@ -27,7 +34,7 @@ $(function () {
             },
             {data: 'action', searchable: false, filterable: false}
         ],
-        order: [[2, 'asc']],
+        order: [[0, 'asc']],
         ajax: {
             type: 'GET',
             dataSrc: 'data'
@@ -46,7 +53,12 @@ $(function () {
         }
     });
 
+    $(".select_all").click(function () {
+        $('#'+ $(this).closest('tr').parent().parent().attr('id') +' input[type="checkbox"]').prop('checked', this.checked);
+    });
+
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        $(".select_all").prop('checked', false)
         $($.fn.dataTable.tables(true)).css('width', '100%');
         $($.fn.dataTable.tables(true)).DataTable().columns.adjust().draw();
     });
@@ -60,6 +72,16 @@ $(function () {
         $('#detail-secondary').text((data_row.secondary_phone != null) ? data_row.secondary_phone : 'NA');
         $('#detail-image').attr('src', data_row.photo).attr('alt', data_row.name);
         $('#viewContactDetails').modal('show');
+    });
+
+    $(document).on('click', '#download_selected', function () {
+        var ref_this = $("ul.nav-tabs li.active a").attr('href');
+        var favorite = [];
+        $.each($(ref_this).find("input[name='contacts[]']:checked"), function(){
+            favorite.push($(this).val());
+        });
+        $('#vcfs').val(favorite);
+        $('#export_vcfs').submit();
     });
 
     $(".modal#viewContactDetails").on("hidden.bs.modal", function () {
