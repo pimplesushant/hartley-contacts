@@ -24,7 +24,7 @@ class ContactController extends Controller
     public function index()
     {
         try {
-            $data['users'] = User::whereNotNull('email_verified_at')->get();
+            $data['users'] = User::whereNotNull('email_verified_at')->where('id', '!=', Auth::user()->id)->get();
             return view('contacts.listing', $data);
         } catch (\Exception $ex) {
             return abort('404');
