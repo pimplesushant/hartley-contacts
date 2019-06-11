@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contact;
 use App\User;
+use Chumper\Zipper\Facades\Zipper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -33,6 +34,9 @@ class ContactController extends Controller
             $contacts = Contact::where('created_by', Auth::user()->id);
             $responseBody = array();
             return DataTables::of($contacts)
+                ->addColumn('checkbox', function ($m) {
+                    return $m->id;
+                })
                 ->addColumn('name', function ($m) {
                     $name = $m->first_name . " " . $m->middle_name . " " . $m->last_name;
                     return preg_replace('!\s+!', ' ', $name);
@@ -186,6 +190,35 @@ class ContactController extends Controller
         $vcard->addPhoneNumber($contact->secondary_phone, 'WORK');
         $vcard->addPhoto(public_path() . $contact->photo);
         return $vcard->download();
+    }
+
+    public function export(Request $request)
+    {
+        $contacts = Contact::find(explode(',', $request->contacts));
+        $time = time();
+        $directory = '/vcards/'.$time.'/';
+        $path = public_path() . $directory;
+        if (!File::exists($path)) {
+            File::makeDirectory($path, 0777, $recursive = true, $force = false);
+        }
+        foreach ($contacts as $contact){
+            $vcard = new VCard();
+            $vcard->addName($contact->last_name, $contact->first_name, $contact->middle_name);
+            $vcard->addEmail($contact->email);
+            $vcard->addPhoneNumber($contact->primary_phone, 'PREF;WORK');
+            $vcard->addPhoneNumber($contact->secondary_phone, 'WORK');
+            $vcard->addPhoto(public_path() . $contact->photo);
+            $vcard->setSavePath($path);
+            $vcard->save();
+        }
+
+        $files = glob(public_path($directory.'/*'));
+        Zipper::make(public_path($time.'.zip'))->add($files)->close();
+        File::deleteDirectory($path);
+        $request->session()->flash('message.level', 'success');
+        $request->session()->flash('message.content', 'Contacts Expotred Successfully');
+
+        return response()->download(public_path($time.'.zip'));
     }
 
     /**

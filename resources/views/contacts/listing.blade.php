@@ -9,8 +9,17 @@
         @endif
         <div class="box">
             <div class="box-header with-border">
-                <a href="{{route('contacts.create')}}" class="btn btn-primary pull-right margin-top-15"><i
+                <a href="{{route('contacts.create')}}" class="btn btn-sm btn-primary pull-right margin-top-15"><i
                             class="fa fa-plus"></i>&nbsp;&nbsp;Add New Contact</a>
+                <form action="{{ route('contacts.export') }}" method="POST" id="export_vcfs"
+                      style="display: inline !important;">
+                    @csrf
+                    <input type="hidden" name="contacts" id="vcfs">
+                    <button href="" id="download_selected" class="btn btn-sm btn-info margin-top-15"><i
+                                class="fa fa-download"></i>&nbsp;Download</button>
+                    </button>
+                </form>
+
             </div>
             <!-- /.box-header -->
             <div class="box-body">
@@ -26,6 +35,7 @@
                                 <table id="contacts-list-1" class="table table-bordered table-hover">
                                     <thead>
                                     <tr>
+                                        <th><input type="checkbox" class="select_all" name="id[]"></th>
                                         <th>Sr. No.</th>
                                         <th>Name</th>
                                         <th>Email</th>
@@ -46,6 +56,7 @@
                                 <table id="contacts-list-2" class="table table-bordered table-hover">
                                     <thead>
                                     <tr>
+                                        <th><input type="checkbox" class="select_all" name="id[]"></th>
                                         <th>Sr. No.</th>
                                         <th>Name</th>
                                         <th>Email</th>
